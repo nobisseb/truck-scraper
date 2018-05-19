@@ -1,5 +1,5 @@
 """
-Hier eintrage!
+Hier eintragen!
 """
 import urllib.request
 from bs4 import BeautifulSoup
