@@ -19,7 +19,7 @@ class MobileScraper(Scraper):
         # a list which stores instances the mobile toplevel category class
         self.list_top_level_categories = []
         # mobile top-level categories to be handled
-        self.top_level_category_urls = {"lkw_ueber_7.5t": "https://suchen.mobile.de/fahrzeuge/search.html?damageUnrepaired=ALSO_DAMAGE_UNREPAIRED&grossPrice=false&isSearchRequest=true&maxPowerAsArray=PS&minPowerAsArray=PS&scopeId=TO75", "sattelzugmaschinen": "https://suchen.mobile.de/fahrzeuge/search.html?damageUnrepaired=ALSO_DAMAGE_UNREPAIRED&grossPrice=false&isSearchRequest=true&maxPowerAsArray=PS&minPowerAsArray=PS&scopeId=STT"}
+        self.top_level_category_urls = {"lkw_ueber_7.5t": "https://suchen.mobile.de/fahrzeuge/search.html?damageUnrepaired=ALSO_DAMAGE_UNREPAIRED&grossPrice=false&isSearchRequest=true&scopeId=TO75", "sattelzugmaschinen": "https://suchen.mobile.de/fahrzeuge/search.html?damageUnrepaired=ALSO_DAMAGE_UNREPAIRED&grossPrice=false&isSearchRequest=true&scopeId=STT"}
 
     def fetch_raw_data(self):
         # for every top-level category create a MobileTopLevelCategory instance and store it in a list
@@ -52,3 +52,4 @@ class MobileTopLevelCategory:
         # if the request is successful store the whole html of the top level category page as a string
         else:
             self.html_code = handler.read()
+            print(self.html_code)
