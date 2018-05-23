@@ -1,5 +1,6 @@
 import urllib.request
 import time
+import random
 
 
 def request_html_code(url):
@@ -8,7 +9,9 @@ def request_html_code(url):
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'})
         print("Requesting url: " + url)
         handler = urllib.request.urlopen(req)
-        time.sleep(1)
+
+        # sleep for a couple of seconds
+        time.sleep(random.randint(1,3))
 
     # error handling if the request fails
     except urllib.request.HTTPError as e:

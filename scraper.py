@@ -3,6 +3,7 @@ Hier eintragen!
 """
 from bs4 import BeautifulSoup
 import html_request
+import re
 
 
 class Scraper:
@@ -38,7 +39,7 @@ class MobileTopLevelCategory:
         # request the html code for all search page urls
         self.htmls_all_search_pages = html_request.request_html_code_from_list_of_urls(self.urls_all_search_pages)
         # urls to every truck
-        self.urls_all_items = []
+        self.urls_all_items = self.extract_all_item_urls(self.htmls_all_search_pages)
 
     def construct_search_pages_urls(self, category_url: str):
         list_urls = []
@@ -50,5 +51,22 @@ class MobileTopLevelCategory:
 
         return list_urls
 
+    def extract_all_item_urls(self, list_htmls_search_pages):
+        urls_all_items = []
+
+        for html_code in list_htmls_search_pages:
+            list_item_urls = self.extract_item_urls_from_html(html_code)
+            urls_all_items += list_item_urls
+
+        return urls_all_items
+
     def extract_item_urls_from_html(self, html_code):
-        return None
+        list_urls = []
+
+        soup = BeautifulSoup(html_code, 'html.parser')
+
+        for link in soup.find_all('a', {'class': 'link--muted no--text--decoration result-item'}):
+            span_tag_content_href = link.get('href')
+            list_urls.append(span_tag_content_href)
+
+        return list_urls
