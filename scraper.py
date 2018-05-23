@@ -1,8 +1,8 @@
 """
 Hier eintragen!
 """
-import urllib.request
 from bs4 import BeautifulSoup
+import html_request
 
 
 class Scraper:
@@ -26,30 +26,29 @@ class MobileScraper(Scraper):
         for category in self.top_level_category_urls:
             self.list_top_level_categories.append(MobileTopLevelCategory(category, self.top_level_category_urls[category]))
 
-        # request the html_code of each top level category
-        for category in self.list_top_level_categories:
-            category.request_html_code()
-
 
 class MobileTopLevelCategory:
-    def __init__(self, category_name: str, url: str):
+    def __init__(self, category_name: str, category_url: str):
+        # name of the mobile search category
         self.category_name = category_name
-        self.url = url
-        self.html_code = ""
+        # basic category search url -> &pageNumber=2
+        self.category_url = category_url
+        # urls to all 50 search pages
+        self.urls_all_search_pages = self.construct_search_pages_urls(self.category_url)
+        # request the html code for all search page urls
+        self.htmls_all_search_pages = html_request.request_html_code_from_list_of_urls(self.urls_all_search_pages)
+        # urls to every truck
+        self.urls_all_items = []
 
-    def request_html_code(self):
-        # use a user agent to request the data of mobile top-level category such as "lkw_ueber_7.5t"
-        try:
-            req = urllib.request.Request(self.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'})
-            handler = urllib.request.urlopen(req)
+    def construct_search_pages_urls(self, category_url: str):
+        list_urls = []
+        list_1_to_50 = list(range(1, 51))
 
-        # error handling if the request fails
-        except urllib.request.HTTPError as e:
-            raise ConnectionError(str(e))
-        except urllib.request.URLError as e:
-            raise ConnectionError("The server to : " + self.url + " could not be found!")
+        # for pages 1 to 50 construct a url to access the search result pages
+        for x in list_1_to_50:
+            list_urls.append(category_url + "&pageNumber=" + str(x))
 
-        # if the request is successful store the whole html of the top level category page as a string
-        else:
-            self.html_code = handler.read()
-            print(self.html_code)
+        return list_urls
+
+    def extract_item_urls_from_html(self, html_code):
+        return None
