@@ -4,7 +4,7 @@ Hier eintragen!
 from bs4 import BeautifulSoup
 import html_request
 import re
-
+import unicodedata
 
 class Scraper:
     def __init__(self):
@@ -12,6 +12,63 @@ class Scraper:
         self.raw_data = {}
         # standardized data ready to be stored in a database
         self.standardized_data = {}
+
+
+class Item:
+    def __init__(self, url: str):
+        self.url = url
+        self.html = ""
+        self.raw_data = self.extract_raw_data_from_mobile_url(self.url)
+
+    def extract_raw_data_from_mobile_url(self, url):
+        html = html_request.request_html_code(url)
+        raw_data = {'technische_daten': {}, 'title': ""}
+
+        soup = BeautifulSoup(html, 'html.parser')
+
+        raw_data_technische_daten = self.extract_technische_daten_from_html(soup)
+        raw_data["technische_daten"].update(raw_data_technische_daten)
+
+        raw_title = self.extract_title_from_html(soup)
+        raw_data.update({'title': raw_title})
+
+        raw_net_price = self.extract_net_price_from_html(soup)
+        raw_data.update({'net_price': raw_net_price})
+        print(raw_data)
+        return raw_data
+
+    def extract_technische_daten_from_html(self, soup):
+        raw_data_technische_daten = {}
+        # search the raw html for category/value pairs in "Technische Daten" section
+        for raw_category in soup.find_all('div', {'class': 'g-row u-margin-bottom-9'}):
+            soup_cat = BeautifulSoup(str(raw_category), 'html.parser')
+
+            # extract every category
+            category = str(soup_cat.strong)[8:-9]
+            # extract the corresponding value
+            value = re.findall("-v\">.*</div></div>$", str(raw_category))[0][4:-12]
+
+            # normalize the unicode strings for category and value
+            category_uni = unicodedata.normalize("NFKD", category)
+            value_uni = unicodedata.normalize("NFKD", value)
+
+            raw_data_technische_daten.update({category_uni: value_uni})
+
+        return raw_data_technische_daten
+
+    def extract_title_from_html(self, soup):
+        # extract the item title from html
+        raw_data_title = soup.find('h1', {'class': 'h2', 'id': 'rbt-ad-title'})
+        raw_data_title = raw_data_title.string
+
+        return raw_data_title
+
+    def extract_net_price_from_html(self, soup):
+        # extract the item netto price from html
+        raw_data_net_price = soup.find('span', {'class': 'h3 rbt-prime-price'})
+        raw_data_net_price = str(raw_data_net_price)[33:-20]
+
+        return raw_data_net_price
 
 
 class MobileScraper(Scraper):
@@ -40,6 +97,10 @@ class MobileTopLevelCategory:
         self.htmls_all_search_pages = html_request.request_html_code_from_list_of_urls(self.urls_all_search_pages)
         # urls to every truck
         self.urls_all_items = self.extract_all_item_urls(self.htmls_all_search_pages)
+        # construct a list of item objects
+        self.items = self.construct_item_objects(self.urls_all_items)
+        for item in self.items:
+            print(item.raw_data)
 
     def construct_search_pages_urls(self, category_url: str):
         list_urls = []
@@ -70,3 +131,11 @@ class MobileTopLevelCategory:
             list_urls.append(span_tag_content_href)
 
         return list_urls
+
+    def construct_item_objects(self, list_item_urls):
+        list_item_objects = []
+
+        for url in list_item_urls:
+            list_item_objects.append(Item(url))
+
+        return list_item_objects
