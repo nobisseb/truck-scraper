@@ -104,7 +104,7 @@ class MobileTopLevelCategory:
 
     def construct_search_pages_urls(self, category_url: str):
         list_urls = []
-        list_1_to_50 = list(range(1, 5))
+        list_1_to_50 = list(range(1, 51))
 
         # for pages 1 to 50 construct a url to access the search result pages
         for x in list_1_to_50:
